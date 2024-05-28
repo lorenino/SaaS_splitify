@@ -3,14 +3,13 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
 import sqlite3
-from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 app.config['SESSION_COOKIE_NAME'] = 'Spotify Cookie'
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'spotify_login'
 
 CLIENT_ID = '127378d20985402b80e14553fd1368e7'
 CLIENT_SECRET = '51d1b4df28e64fd8b2a67164fa62f914'
@@ -18,21 +17,29 @@ REDIRECT_URI = 'http://localhost:5000/callback'
 
 sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope='user-library-read playlist-read-private playlist-modify-public playlist-modify-private')
 
-# SQLite Database
+# Initialisation de la base de données
 def init_db():
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, spotify_id TEXT)''')
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        username TEXT,
+        spotify_id TEXT UNIQUE,
+        email TEXT UNIQUE
+    )
+    ''')
     conn.commit()
     conn.close()
 
 init_db()
 
 class User(UserMixin):
-    def __init__(self, id_, username, spotify_id):
+    def __init__(self, id_, username, spotify_id, email):
         self.id = id_
         self.username = username
         self.spotify_id = spotify_id
+        self.email = email
 
     @staticmethod
     def get(user_id):
@@ -43,7 +50,7 @@ class User(UserMixin):
         conn.close()
         if not user:
             return None
-        return User(id_=user[0], username=user[1], spotify_id=user[3])
+        return User(id_=user[0], username=user[1], spotify_id=user[2], email=user[3])
 
     @staticmethod
     def find_by_spotify_id(spotify_id):
@@ -54,17 +61,15 @@ class User(UserMixin):
         conn.close()
         if not user:
             return None
-        return User(id_=user[0], username=user[1], spotify_id=user[3])
+        return User(id_=user[0], username=user[1], spotify_id=user[2], email=user[3])
 
     @staticmethod
-    def create(username, password, spotify_id):
+    def create(username, spotify_id, email):
         conn = sqlite3.connect('users.db')
         c = conn.cursor()
-        hashed_password = generate_password_hash(password) if password else None
-        c.execute('INSERT INTO users (username, password, spotify_id) VALUES (?, ?, ?)', (username, hashed_password, spotify_id))
+        c.execute('INSERT INTO users (username, spotify_id, email) VALUES (?, ?, ?)', (username, spotify_id, email))
         conn.commit()
         conn.close()
-
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -78,39 +83,6 @@ def index():
 def about():
     return render_template('about.html')
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        conn = sqlite3.connect('users.db')
-        c = conn.cursor()
-        c.execute('SELECT * FROM users WHERE username = ?', (username,))
-        user = c.fetchone()
-        conn.close()
-        if user and check_password_hash(user[2], password):
-            user_obj = User(id_=user[0], username=user[1], spotify_id=user[3])
-            login_user(user_obj)
-            flash('Logged in successfully.')
-            if user[3] is None:  # Vérifie si spotify_id est None
-                flash('Please link your Spotify account.')
-                return redirect(url_for('spotify_login'))
-            return redirect(url_for('display_playlists'))
-        else:
-            flash('Invalid username or password.')
-    return render_template('login.html')
-
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        User.create(username, password, None)  # Create user without spotify_id initially
-        flash('Account created successfully. Please log in.')
-        return redirect(url_for('login'))
-    return render_template('signup.html')
-
 @app.route('/spotify_login')
 def spotify_login():
     return redirect(sp_oauth.get_authorize_url())
@@ -123,34 +95,22 @@ def callback():
     sp = Spotify(auth=token_info['access_token'])
     user_info = sp.current_user()
     spotify_id = user_info['id']
+    email = user_info['email']
     username = user_info['display_name'] or user_info['id']
 
-    flash(f"Spotify ID retrieved: {spotify_id}")
-
-    # Check if user is logged in
-    if current_user.is_authenticated:
-        conn = sqlite3.connect('users.db')
-        c = conn.cursor()
-        c.execute('UPDATE users SET spotify_id = ? WHERE id = ?', (spotify_id, current_user.id))
-        conn.commit()
-        conn.close()
-        flash('Spotify account linked successfully.')
-        return redirect(url_for('display_playlists'))
-    
-    # If not logged in, check if the user exists
+    # Vérifiez si l'utilisateur est connecté
     user = User.find_by_spotify_id(spotify_id)
     if user:
         login_user(user)
         flash('Logged in with Spotify successfully.')
     else:
-        # If user does not exist, create a new one
-        User.create(username, None, spotify_id)
+        # Si l'utilisateur n'existe pas, créez-en un nouveau
+        User.create(username, spotify_id, email)
         user = User.find_by_spotify_id(spotify_id)
         login_user(user)
         flash('Account created and logged in with Spotify successfully.')
 
     return redirect(url_for('display_playlists'))
-
 
 @app.route('/logout')
 @login_required
@@ -166,16 +126,10 @@ def display_playlists():
     if not token_info:
         return redirect(url_for('spotify_login'))
 
-    # Vérifier si l'utilisateur a un spotify_id, sinon forcer la liaison
-    if current_user.spotify_id is None:
-        flash('Please link your Spotify account.')
-        return redirect(url_for('spotify_login'))
-
     sp = Spotify(auth=token_info['access_token'])
-    current_user_info = sp.current_user()
-    user_id = current_user_info['id']
-    playlists = sp.current_user_playlists()
-    structured_playlists = [
+    user_playlists = sp.current_user_playlists()
+    user_id = sp.current_user()['id']
+    playlists = [
         {
             'name': playlist['name'],
             'id': playlist['id'],
@@ -184,10 +138,10 @@ def display_playlists():
             'image_url': playlist['images'][0]['url'] if playlist['images'] else None,
             'owner_id': playlist['owner']['id'],
             'created_by_user': playlist['owner']['id'] == user_id
-        } for playlist in playlists['items']
+        } for playlist in user_playlists['items']
     ]
-    return render_template('playlists.html', playlists=structured_playlists, user_id=user_id)
 
+    return render_template('playlists.html', playlists=playlists, user_id=user_id)
 
 @app.route('/playlist/<playlist_id>')
 @login_required
@@ -323,7 +277,6 @@ def get_spotify_client():
 @app.route('/spotify_login_direct')
 def spotify_login_direct():
     return redirect(sp_oauth.get_authorize_url())
-
 
 if __name__ == '__main__':
     app.run(debug=True)
