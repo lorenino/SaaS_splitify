@@ -13,6 +13,10 @@ REDIRECT_URI = 'http://localhost:5000/callback'
 sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope='user-library-read playlist-read-private playlist-modify-public playlist-modify-private')
 
 @app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/login')
 def login():
     auth_url = sp_oauth.get_authorize_url()
     return redirect(auth_url)
@@ -112,7 +116,6 @@ def swipe_playlist_with_add(playlist_id):
     
     return render_template('swipe.html', tracks=tracks, playlist_id=playlist_id, selected_playlists=selected_playlists_details)
 
-
 @app.route('/playlist/<playlist_id>/remove_track/<track_id>', methods=['POST'])
 def remove_track(playlist_id, track_id):
     token_info = session.get('token_info', None)
@@ -135,7 +138,9 @@ def add_track_to_playlists(playlist_id, track_id):
         sp.playlist_add_items(pl_id, [track_id])
     return '', 204
 
-
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 
 if __name__ == '__main__':

@@ -1,8 +1,76 @@
 {% extends "layout.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Home - SaaS Application{% endblock %}
 
 {% block content %}
-<h1>Welcome to My Spotify App</h1>
-<p>This is the home page.</p>
+<style>
+    .hero {
+        background-color: #1db954;
+        color: white;
+        padding: 100px 20px;
+        text-align: center;
+    }
+    .features, .pricing, .footer {
+        padding: 40px 20px;
+        text-align: center;
+    }
+    .feature, .price-plan {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin: 20px;
+        padding: 20px;
+        display: inline-block;
+        width: 30%;
+    }
+    .footer {
+        background-color: #333;
+        color: white;
+    }
+</style>
+
+<div class="hero">
+    <h1>Welcome to SaaS Application</h1>
+    <p>Your solution to manage and streamline your Spotify playlists effortlessly.</p>
+</div>
+
+<div class="features" id="features">
+    <h2>Features</h2>
+    <div class="feature">
+        <h3>Manage Playlists</h3>
+        <p>Organize and control your Spotify playlists with ease.</p>
+    </div>
+    <div class="feature">
+        <h3>Swipe Tracks</h3>
+        <p>Swipe through your tracks to keep or remove them from your playlists.</p>
+    </div>
+    <div class="feature">
+        <h3>Multi-Playlist Support</h3>
+        <p>Add tracks to multiple playlists with just a few clicks.</p>
+    </div>
+</div>
+
+<div class="pricing" id="pricing">
+    <h2>Pricing</h2>
+    <div class="price-plan">
+        <h3>Free</h3>
+        <p>$0/month</p>
+        <p>Basic features to get started</p>
+    </div>
+    <div class="price-plan">
+        <h3>Pro</h3>
+        <p>$9.99/month</p>
+        <p>Advanced features for power users</p>
+    </div>
+    <div class="price-plan">
+        <h3>Enterprise</h3>
+        <p>$29.99/month</p>
+        <p>All features for large teams</p>
+    </div>
+</div>
+
+<div class="footer" id="contact">
+    <p>Contact us at <a href="mailto:contact@saasapplication.com" style="color: #1db954;">contact@saasapplication.com</a></p>
+    <p>&copy; 2024 SaaS Application. All rights reserved.</p>
+</div>
 {% endblock %}
