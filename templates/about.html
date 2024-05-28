@@ -3,22 +3,54 @@
 {% block title %}About{% endblock %}
 
 {% block content %}
-<h1>About My Spotify App</h1>
-<p>Welcome to My Spotify App! This application is designed to enhance your Spotify experience by providing an intuitive interface to manage your playlists. Whether you want to view your playlists, modify them directly, or organize your tracks efficiently, our app offers the tools you need.</p>
+<style>
+    .about-section {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+    }
+    .about-section h1, .about-section h2 {
+        color: #1db954;
+        text-align: center;
+    }
+    .about-section p {
+        font-size: 18px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+    .about-section ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .about-section li {
+        background-color: #f9f9f9;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+</style>
 
-<h2>Features</h2>
-<ul>
-    <li>View and manage your Spotify playlists</li>
-    <li>Add or remove tracks from playlists</li>
-    <li>Swipe functionality to quickly manage tracks</li>
-    <li>Easy navigation with a user-friendly interface</li>
-</ul>
+<div class="about-section">
+    <h1>About My Spotify App</h1>
+    <p>Welcome to My Spotify App! This application is designed to enhance your Spotify experience by providing an intuitive interface to manage your playlists. Whether you want to view your playlists, modify them directly, or organize your tracks efficiently, our app offers the tools you need.</p>
 
-<h2>How It Works</h2>
-<p>After logging in with your Spotify account, you can access all your playlists. Use the navigation bar to explore different sections of the app. The "Playlists" section allows you to view all your playlists, and from there, you can dive into individual playlists to manage tracks.</p>
+    <h2>Features</h2>
+    <ul>
+        <li>View and manage your Spotify playlists</li>
+        <li>Add or remove tracks from playlists</li>
+        <li>Swipe functionality to quickly manage tracks</li>
+        <li>Easy navigation with a user-friendly interface</li>
+    </ul>
 
-<h2>About the Developer</h2>
-<p>My Spotify App was created by a passionate developer who loves music and technology. The goal was to create an app that simplifies playlist management and enhances the overall Spotify experience for users.</p>
+    <h2>How It Works</h2>
+    <p>After logging in with your Spotify account, you can access all your playlists. Use the navigation bar to explore different sections of the app. The "Playlists" section allows you to view all your playlists, and from there, you can dive into individual playlists to manage tracks.</p>
 
-<p>We hope you enjoy using My Spotify App!</p>
+    <h2>About the Developer</h2>
+    <p>My Spotify App was created by a passionate developer who loves music and technology. The goal was to create an app that simplifies playlist management and enhances the overall Spotify experience for users.</p>
+
+    <p>We hope you enjoy using My Spotify App!</p>
+</div>
 {% endblock %}

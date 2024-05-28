@@ -90,10 +90,14 @@ def login():
             user_obj = User(id_=user[0], username=user[1], spotify_id=user[3])
             login_user(user_obj)
             flash('Logged in successfully.')
+            if user[3] is None:  # Vérifie si spotify_id est None
+                flash('Please link your Spotify account.')
+                return redirect(url_for('spotify_login'))
             return redirect(url_for('display_playlists'))
         else:
             flash('Invalid username or password.')
     return render_template('login.html')
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -132,7 +136,6 @@ def callback():
         flash('Please log in or sign up to link your Spotify account.')
         return redirect(url_for('login'))
 
-
 @app.route('/logout')
 @login_required
 def logout():
@@ -145,6 +148,11 @@ def logout():
 def display_playlists():
     token_info = session.get('token_info', None)
     if not token_info:
+        return redirect(url_for('spotify_login'))
+
+    # Vérifier si l'utilisateur a un spotify_id, sinon forcer la liaison
+    if current_user.spotify_id is None:
+        flash('Please link your Spotify account.')
         return redirect(url_for('spotify_login'))
 
     sp = Spotify(auth=token_info['access_token'])
@@ -163,6 +171,7 @@ def display_playlists():
         } for playlist in playlists['items']
     ]
     return render_template('playlists.html', playlists=structured_playlists, user_id=user_id)
+
 
 @app.route('/playlist/<playlist_id>')
 @login_required
@@ -274,6 +283,16 @@ def profile():
 
     return render_template('profile.html', spotify_id=spotify_id)
 
+def get_spotify_client():
+    token_info = session.get('token_info', None)
+    if not token_info:
+        return None
+
+    if sp_oauth.is_token_expired(token_info):
+        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+        session['token_info'] = token_info
+    
+    return Spotify(auth=token_info['access_token'])
 
 if __name__ == '__main__':
     app.run(debug=True)

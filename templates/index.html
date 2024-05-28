@@ -14,18 +14,46 @@
         padding: 40px 20px;
         text-align: center;
     }
-    .feature, .price-plan {
+    .features {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .feature {
         background-color: white;
         border-radius: 10px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         margin: 20px;
         padding: 20px;
-        display: inline-block;
-        width: 30%;
+        flex: 1 1 30%;
+        max-width: 30%;
+        box-sizing: border-box;
+    }
+    .pricing {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .price-plan {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin: 20px;
+        padding: 20px;
+        flex: 1 1 30%;
+        max-width: 30%;
+        box-sizing: border-box;
     }
     .footer {
         background-color: #333;
         color: white;
+    }
+    .footer a {
+        color: #1db954;
+        text-decoration: none;
+    }
+    .footer a:hover {
+        text-decoration: underline;
     }
 </style>
 
@@ -70,7 +98,7 @@
 </div>
 
 <div class="footer" id="contact">
-    <p>Contact us at <a href="mailto:contact@saasapplication.com" style="color: #1db954;">contact@saasapplication.com</a></p>
+    <p>Contact us at <a href="mailto:contact@saasapplication.com">contact@saasapplication.com</a></p>
     <p>&copy; 2024 SaaS Application. All rights reserved.</p>
 </div>
 {% endblock %}

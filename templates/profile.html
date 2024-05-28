@@ -1,21 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile</title>
-</head>
-<body>
-    <h1>User Profile</h1>
-    <p>Spotify ID: {{ spotify_id }}</p>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-</body>
-</html>
+{% extends "layout.html" %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+    <style>
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .profile-info p {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        .messages {
+            margin: 20px 0;
+            list-style-type: none;
+            padding: 0;
+        }
+        .messages li {
+            background-color: #1db954;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+
+    <div class="content">
+        <div class="profile-header">
+            <h1>User Profile</h1>
+        </div>
+        <div class="profile-info">
+            <p><strong>Spotify ID:</strong> {{ spotify_id }}</p>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <ul class="messages">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+{% endblock %}
