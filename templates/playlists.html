@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Playlists</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+        .playlist-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            overflow: hidden;
+            width: 200px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .playlist-card img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .playlist-card h3 {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .playlist-card p {
+            color: #666;
+            font-size: 14px;
+            margin: 0 0 10px;
+        }
+        .playlist-card a {
+            display: block;
+            padding: 10px;
+            background-color: #1db954;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 0 0 10px 10px;
+        }
+        .playlist-card a:hover {
+            background-color: #1aa34a;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px;
+        }
+    </style>
+    <script>
+        function toggleVisibility() {
+            var checkBox = document.getElementById("toggleCheckbox");
+            var cards = document.getElementsByClassName("playlist-card");
+
+            for (var i = 0; i < cards.length; i++) {
+                var card = cards[i];
+                if (card.getAttribute("data-created-by-user") === "False") {
+                    card.style.display = checkBox.checked ? "none" : "flex";
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="controls">
+        <label>
+            <input type="checkbox" id="toggleCheckbox" onclick="toggleVisibility()">
+            Show only my playlists
+        </label>
+    </div>
+    <div class="container">
+        {% for playlist in playlists %}
+        <div class="playlist-card" data-created-by-user="{{ playlist.created_by_user }}">
+            <img src="{{ playlist.image_url }}" alt="Playlist Image">
+            <h3>{{ playlist.name }}</h3>
+            <p>{{ playlist.total_tracks }} tracks</p>
+            <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}">View Details</a>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
