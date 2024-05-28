@@ -293,11 +293,21 @@ def profile():
 
     if spotify_id:
         spotify_id = spotify_id[0]
+        sp = get_spotify_client()
+        user_info = sp.current_user()
+        profile_info = {
+            'display_name': user_info.get('display_name', 'N/A'),
+            'email': user_info.get('email', 'N/A'),
+            'followers': user_info.get('followers', {}).get('total', 'N/A'),
+            'profile_image': user_info.get('images', [{}])[0].get('url', None)
+        }
     else:
         spotify_id = "Not Linked"
+        profile_info = {}
         flash("Spotify ID not linked")
 
-    return render_template('profile.html', spotify_id=spotify_id)
+    return render_template('profile.html', spotify_id=spotify_id, profile_info=profile_info)
+
 
 def get_spotify_client():
     token_info = session.get('token_info', None)

@@ -3,53 +3,45 @@
 {% block title %}User Profile{% endblock %}
 
 {% block content %}
-    <style>
-        .profile-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .profile-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .profile-info p {
-            font-size: 18px;
-            margin: 10px 0;
-        }
-        .messages {
-            margin: 20px 0;
-            list-style-type: none;
-            padding: 0;
-        }
-        .messages li {
-            background-color: #1db954;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-    </style>
+<style>
+    .profile-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    .profile-image {
+        border-radius: 50%;
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        margin-bottom: 20px;
+    }
+    .profile-info {
+        text-align: left;
+    }
+    .profile-info h2 {
+        margin: 0;
+        padding: 0;
+        font-size: 24px;
+    }
+    .profile-info p {
+        margin: 5px 0;
+    }
+</style>
 
-    <div class="content">
-        <div class="profile-header">
-            <h1>User Profile</h1>
-        </div>
-        <div class="profile-info">
-            <p><strong>Spotify ID:</strong> {{ spotify_id }}</p>
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <ul class="messages">
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                    </ul>
-                {% endif %}
-            {% endwith %}
-        </div>
+<div class="profile-container">
+    {% if profile_info.profile_image %}
+        <img src="{{ profile_info.profile_image }}" alt="Profile Image" class="profile-image">
+    {% endif %}
+    <div class="profile-info">
+        <h2>{{ profile_info.display_name }}</h2>
+        <p><strong>Email:</strong> {{ profile_info.email }}</p>
+        <p><strong>Followers:</strong> {{ profile_info.followers }}</p>
+        <p><strong>Spotify ID:</strong> {{ spotify_id }}</p>
     </div>
+</div>
 {% endblock %}
