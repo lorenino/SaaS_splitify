@@ -1,179 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Swipe Tracks</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            position: relative;
-            flex-direction: column;
-        }
-        .track-card {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin: 10px;
-            width: 300px;
-            text-align: center;
-            padding: 20px;
-            position: absolute;
-            top: 50px;
-        }
-        .track-card img {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
-        }
-        .track-card h3 {
-            margin: 10px 0;
-            font-size: 18px;
-        }
-        .track-card p {
-            color: #666;
-            font-size: 14px;
-            margin: 0 0 10px;
-        }
-        .controls {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .button {
-            padding: 10px 20px;
-            background-color: #1db954;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .button:hover {
-            background-color: #1aa34a;
-        }
-        .button.remove {
-            background-color: #e74c3c;
-        }
-        .button.remove:hover {
-            background-color: #c0392b;
-        }
-        .back-button {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 24px;
-            text-decoration: none;
-            color: #000;
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-        }
-        .back-button:hover {
-            color: #555;
-        }
-        .add-to-playlists {
-            margin-top: 350px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .playlist-card {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin: 10px;
-            width: 150px;
-            text-align: center;
-            padding: 10px;
-            cursor: pointer;
-        }
-        .playlist-card img {
-            width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-        .playlist-card h4 {
-            margin: 10px 0;
-            font-size: 14px;
-        }
-    </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            let currentTrackIndex = 0;
-            const tracks = {{ tracks|tojson }};
-            const playlistId = "{{ playlist_id }}";
-            const selectedPlaylists = {{ selected_playlists|tojson }};
+{% extends "layout.html" %}
 
-            function showTrack(index) {
-                if (index >= tracks.length) {
-                    document.getElementById('track-card').innerHTML = "<h3>No more tracks</h3>";
-                    return;
-                }
-                let track = tracks[index].track;
-                document.getElementById('track-image').src = track.album.images[0].url;
-                document.getElementById('track-name').innerText = track.name;
-                document.getElementById('track-artist').innerText = track.artists[0].name;
-                document.getElementById('keep-button').style.display = 'inline-block';
-                document.getElementById('remove-button').style.display = 'inline-block';
-            }
+{% block title %}Swipe Tracks{% endblock %}
 
-            function keepTrack() {
-                currentTrackIndex++;
-                showTrack(currentTrackIndex);
-            }
+{% block content %}
+<style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 70px; /* Adjust for the navbar height */
+    }
+    .track-card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin: 10px;
+        width: 300px;
+        text-align: center;
+        padding: 20px;
+    }
+    .track-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+    }
+    .track-card h3 {
+        margin: 10px 0;
+        font-size: 18px;
+    }
+    .track-card p {
+        color: #666;
+        font-size: 14px;
+        margin: 0 0 10px;
+    }
+    .controls {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .button {
+        padding: 10px 20px;
+        background-color: #1db954;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .button:hover {
+        background-color: #1aa34a;
+    }
+    .button.remove {
+        background-color: #e74c3c;
+    }
+    .button.remove:hover {
+        background-color: #c0392b;
+    }
+    .back-button {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 24px;
+        text-decoration: none;
+        color: #000;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+    }
+    .back-button:hover {
+        color: #555;
+    }
+    .add-to-playlists {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .playlist-card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin: 10px;
+        width: 150px;
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+    }
+    .playlist-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+    .playlist-card h4 {
+        margin: 10px 0;
+        font-size: 14px;
+    }
+</style>
 
-            function removeTrack() {
-                let trackId = tracks[currentTrackIndex].track.id;
-                fetch(`/playlist/${playlistId}/remove_track/${trackId}`, { method: 'POST' })
-                    .then(response => {
-                        if (response.ok) {
-                            currentTrackIndex++;
-                            showTrack(currentTrackIndex);
-                        }
-                    });
-            }
-
-            function addToPlaylist(plId) {
-                let trackId = tracks[currentTrackIndex].track.id;
-                fetch(`/playlist/${playlistId}/add_track_to_playlists/${trackId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ selected_playlists: [plId] })
-                }).then(response => {
-                    if (response.ok) {
-                        alert('Track added to selected playlist');
-                    }
-                });
-            }
-
-            document.getElementById('keep-button').addEventListener('click', keepTrack);
-            document.getElementById('remove-button').addEventListener('click', removeTrack);
-
-            selectedPlaylists.forEach(pl => {
-                const playlistCard = document.createElement('div');
-                playlistCard.className = 'playlist-card';
-                playlistCard.innerHTML = `
-                    <img src="${pl.image_url}" alt="Playlist Image">
-                    <h4>${pl.name}</h4>
-                `;
-                playlistCard.addEventListener('click', () => addToPlaylist(pl.id));
-                document.querySelector('.add-to-playlists').appendChild(playlistCard);
-            });
-
-            showTrack(currentTrackIndex);
-        });
-    </script>
-</head>
-<body>
+<div class="container">
     <button class="back-button" onclick="window.location.href='{{ url_for('view_playlist', playlist_id=playlist_id) }}'">&times;</button>
     <div id="track-card" class="track-card">
         <img id="track-image" src="" alt="Track Image">
@@ -187,5 +110,74 @@
     <div class="add-to-playlists">
         <!-- Playlist cards will be appended here -->
     </div>
-</body>
-</html>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        let currentTrackIndex = 0;
+        const tracks = {{ tracks|tojson }};
+        const playlistId = "{{ playlist_id }}";
+        const selectedPlaylists = {{ selected_playlists|tojson }};
+
+        function showTrack(index) {
+            if (index >= tracks.length) {
+                document.getElementById('track-card').innerHTML = "<h3>No more tracks</h3>";
+                return;
+            }
+            let track = tracks[index].track;
+            document.getElementById('track-image').src = track.album.images[0].url;
+            document.getElementById('track-name').innerText = track.name;
+            document.getElementById('track-artist').innerText = track.artists[0].name;
+            document.getElementById('keep-button').style.display = 'inline-block';
+            document.getElementById('remove-button').style.display = 'inline-block';
+        }
+
+        function keepTrack() {
+            currentTrackIndex++;
+            showTrack(currentTrackIndex);
+        }
+
+        function removeTrack() {
+            let trackId = tracks[currentTrackIndex].track.id;
+            fetch(`/playlist/${playlistId}/remove_track/${trackId}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        currentTrackIndex++;
+                        showTrack(currentTrackIndex);
+                    }
+                });
+        }
+
+        function addToPlaylist(plId) {
+            let trackId = tracks[currentTrackIndex].track.id;
+            fetch(`/playlist/${playlistId}/add_track_to_playlists/${trackId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selected_playlists: [plId] })
+            }).then(response => {
+                if (response.ok) {
+                    alert('Track added to selected playlist');
+                }
+            });
+        }
+
+        document.getElementById('keep-button').addEventListener('click', keepTrack);
+        document.getElementById('remove-button').addEventListener('click', removeTrack);
+
+        selectedPlaylists.forEach(pl => {
+            const playlistCard = document.createElement('div');
+            playlistCard.className = 'playlist-card';
+            playlistCard.innerHTML = `
+                <img src="${pl.image_url}" alt="Playlist Image">
+                <h4>${pl.name}</h4>
+            `;
+            playlistCard.addEventListener('click', () => addToPlaylist(pl.id));
+            document.querySelector('.add-to-playlists').appendChild(playlistCard);
+        });
+
+        showTrack(currentTrackIndex);
+    });
+</script>
+{% endblock %}

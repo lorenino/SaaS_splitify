@@ -1,73 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Playlists</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            width: 300px;
-            text-align: center;
-        }
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        .playlist {
-            margin: 10px 0;
-        }
-        .playlist img {
-            width: 50px;
-            height: 50px;
-            border-radius: 5px;
-            vertical-align: middle;
-            margin-right: 10px;
-        }
-        .playlist label {
-            font-size: 18px;
-            vertical-align: middle;
-        }
-        .button {
-            padding: 10px 20px;
-            background-color: #1db954;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .button:hover {
-            background-color: #1aa34a;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Select Playlists</h1>
-        <form method="POST">
-            {% for playlist in playlists %}
-                <div class="playlist">
-                    <input type="checkbox" id="playlist_{{ playlist.id }}" name="selected_playlists" value="{{ playlist.id }}">
-                    <img src="{{ playlist.image_url }}" alt="Playlist Image">
-                    <label for="playlist_{{ playlist.id }}">{{ playlist.name }}</label>
-                </div>
-            {% endfor %}
-            <button type="submit" class="button">Continue</button>
-        </form>
-    </div>
-</body>
-</html>
+{% extends "layout.html" %}
+
+{% block title %}Select Playlists{% endblock %}
+
+{% block content %}
+<style>
+    .container {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 320px;
+        text-align: center;
+        margin: auto;
+    }
+    h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    .playlist {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+    .playlist:hover {
+        background-color: #f0f0f0;
+    }
+    .playlist img {
+        width: 50px;
+        height: 50px;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+    .playlist label {
+        font-size: 16px;
+        flex: 1;
+        text-align: left;
+        margin-left: 10px; /* Added margin to separate the checkbox from the label */
+    }
+    .button {
+        padding: 10px 20px;
+        background-color: #1db954;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 20px;
+        width: 100%;
+    }
+    .button:hover {
+        background-color: #1aa34a;
+    }
+</style>
+
+<div class="container">
+    <h1>Select Playlists</h1>
+    <form method="POST">
+        {% for playlist in playlists %}
+            <div class="playlist">
+                <input type="checkbox" id="playlist_{{ playlist.id }}" name="selected_playlists" value="{{ playlist.id }}">
+                <img src="{{ playlist.image_url }}" alt="Playlist Image">
+                <label for="playlist_{{ playlist.id }}">{{ playlist.name }}</label>
+            </div>
+        {% endfor %}
+        <button type="submit" class="button">Continue</button>
+    </form>
+</div>
+{% endblock %}
