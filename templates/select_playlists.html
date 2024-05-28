@@ -2,138 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <metaTo add two "Modify" buttons on the playlist details page, one with the option to select playlists and one without, and then handle the selected playlists during the swipe, you can follow these steps:
-
-### Step 1: Update Flask Application
-
-Add routes to handle both types of "Modify" buttons.
-
-**app.py**
-```python
-from flask import Flask, redirect, request, session, url_for, render_template, jsonify
-from spotipy import Spotify
-from spotipy.oauth2 import SpotifyOAuth
-
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'
-app.config['SESSION_COOKIE_NAME'] = 'Spotify Cookie'
-
-CLIENT_ID = '127378d20985402b80e14553fd1368e7'
-CLIENT_SECRET = '51d1b4df28e64fd8b2a67164fa62f914'
-REDIRECT_URI = 'http://localhost:5000/callback'
-
-sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope='user-library-read playlist-read-private playlist-modify-public playlist-modify-private')
-
-@app.route('/')
-def login():
-    auth_url = sp_oauth.get_authorize_url()
-    return redirect(auth_url)
-
-@app.route('/callback')
-def callback():
-    code = request.args.get('code')
-    token_info = sp_oauth.get_access_token(code)
-    session['token_info'] = token_info
-    return redirect(url_for('display_playlists'))
-
-@app.route('/display_playlists')
-def display_playlists():
-    token_info = session.get('token_info', None)
-    if not token_info:
-        return redirect(url_for('login'))
-
-    sp = Spotify(auth=token_info['access_token'])
-    current_user = sp.current_user()
-    user_id = current_user['id']
-    playlists = sp.current_user_playlists()
-    structured_playlists = [
-        {
-            'name': playlist['name'],
-            'id': playlist['id'],
-            'total_tracks': playlist['tracks']['total'],
-            'external_url': playlist['external_urls']['spotify'],
-            'image_url': playlist['images'][0]['url'] if playlist['images'] else None,
-            'owner_id': playlist['owner']['id'],
-            'created_by_user': playlist['owner']['id'] == user_id
-        } for playlist in playlists['items']
-    ]
-    return render_template('playlists.html', playlists=structured_playlists, user_id=user_id)
-
-@app.route('/playlist/<playlist_id>')
-def view_playlist(playlist_id):
-    token_info = session.get('token_info', None)
-    if not token_info:
-        return redirect(url_for('login'))
-
-    sp = Spotify(auth=token_info['access_token'])
-    playlist = sp.playlist(playlist_id)
-    return render_template('playlist_details.html', playlist=playlist)
-
-@app.route('/select_playlists/<playlist_id>', methods=['GET', 'POST'])
-def select_playlists(playlist_id):
-    token_info = session.get('token_info', None)
-    if not token_info:
-        return redirect(url_for('login'))
-
-    sp = Spotify(auth=token_info['access_token'])
-    if request.method == 'POST':
-        selected_playlists = request.form.getlist('selected_playlists')
-        return redirect(url_for('swipe_playlist_with_add', playlist_id=playlist_id, selected_playlists=','.join(selected_playlists)))
-
-    playlists = sp.current_user_playlists()
-    structured_playlists = [
-        {
-            'name': playlist['name'],
-            'id': playlist['id'],
-            'image_url': playlist['images'][0]['url'] if playlist['images'] else None
-        } for playlist in playlists['items'] if playlist['owner']['id'] == sp.current_user()['id']
-    ]
-    return render_template('select_playlists.html', playlists=structured_playlists, current_playlist_id=playlist_id)
-
-@app.route('/playlist/<playlist_id>/swipe')
-def swipe_playlist(playlist_id):
-    token_info = session.get('token_info', None)
-    if not token_info:
-        return redirect(url_for('login'))
-
-    sp = Spotify(auth=token_info['access_token'])
-    playlist = sp.playlist(playlist_id)
-    tracks = playlist['tracks']['items']
-    return render_template('swipe.html', tracks=tracks, playlist_id=playlist_id, selected_playlists=[])
-
-@app.route('/playlist/<playlist_id>/swipe_with_add')
-def swipe_playlist_with_add(playlist_id):
-    token_info = session.get('token_info', None)
-    if not token_info:
-        return redirect(url_for('login'))
-
-    selected_playlists = request.args.get('selected_playlists', '').split(',')
-    sp = Spotify(auth=token_info['access_token'])
-    playlist = sp.playlist(playlist_id)
-    tracks = playlist['tracks']['items']
-    return render_template('swipe.html', tracks=tracks, playlist_id=playlist_id, selected_playlists=selected_playlists)
-
-@app.route('/playlist/<playlist_id>/remove_track/<track_id>', methods=['POST'])
-def remove_track(playlist_id, track_id):
-    token_info = session.get('token_info', None)
-    if not token_info:
-        return redirect(url_for('login'))
-
-    sp = Spotify(auth=token_info['access_token'])
-    sp.playlist_remove_all_occurrences_of_items(playlist_id, [track_id])
-    return '', 204
-
-@app.route('/playlist/<playlist_id>/add_track_to_playlists/<track_id>', methods=['POST'])
-def add_track_to_playlists(playlist_id, track_id):
-    token_info = session.get('token_info', None)
-    if not token_info:
-        return redirect(url_for('login'))
-
-    selected_playlists = request.json.get('selected_playlists', [])
-    sp = Spotify(auth=token_info['access_token'])
-    for pl_id in selected_playlists:
-        sp.playlist_add_items(pl_id, [track_id])
-    return '', 204
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Playlists</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .playlist {
+            margin: 10px 0;
+        }
+        .playlist img {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        .playlist label {
+            font-size: 18px;
+            vertical-align: middle;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #1db954;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background-color: #1aa34a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Select Playlists</h1>
+        <form method="POST">
+            {% for playlist in playlists %}
+                <div class="playlist">
+                    <input type="checkbox" id="playlist_{{ playlist.id }}" name="selected_playlists" value="{{ playlist.id }}">
+                    <img src="{{ playlist.image_url }}" alt="Playlist Image">
+                    <label for="playlist_{{ playlist.id }}">{{ playlist.name }}</label>
+                </div>
+            {% endfor %}
+            <button type="submit" class="button">Continue</button>
+        </form>
+    </div>
+</body>
+</html>
