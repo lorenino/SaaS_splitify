@@ -60,9 +60,11 @@ class User(UserMixin):
     def create(username, password, spotify_id):
         conn = sqlite3.connect('users.db')
         c = conn.cursor()
-        c.execute('INSERT INTO users (username, password, spotify_id) VALUES (?, ?, ?)', (username, generate_password_hash(password), spotify_id))
+        hashed_password = generate_password_hash(password) if password else None
+        c.execute('INSERT INTO users (username, password, spotify_id) VALUES (?, ?, ?)', (username, hashed_password, spotify_id))
         conn.commit()
         conn.close()
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -121,9 +123,11 @@ def callback():
     sp = Spotify(auth=token_info['access_token'])
     user_info = sp.current_user()
     spotify_id = user_info['id']
+    username = user_info['display_name'] or user_info['id']
 
     flash(f"Spotify ID retrieved: {spotify_id}")
 
+    # Check if user is logged in
     if current_user.is_authenticated:
         conn = sqlite3.connect('users.db')
         c = conn.cursor()
@@ -132,9 +136,21 @@ def callback():
         conn.close()
         flash('Spotify account linked successfully.')
         return redirect(url_for('display_playlists'))
+    
+    # If not logged in, check if the user exists
+    user = User.find_by_spotify_id(spotify_id)
+    if user:
+        login_user(user)
+        flash('Logged in with Spotify successfully.')
     else:
-        flash('Please log in or sign up to link your Spotify account.')
-        return redirect(url_for('login'))
+        # If user does not exist, create a new one
+        User.create(username, None, spotify_id)
+        user = User.find_by_spotify_id(spotify_id)
+        login_user(user)
+        flash('Account created and logged in with Spotify successfully.')
+
+    return redirect(url_for('display_playlists'))
+
 
 @app.route('/logout')
 @login_required
@@ -293,6 +309,11 @@ def get_spotify_client():
         session['token_info'] = token_info
     
     return Spotify(auth=token_info['access_token'])
+
+@app.route('/spotify_login_direct')
+def spotify_login_direct():
+    return redirect(sp_oauth.get_authorize_url())
+
 
 if __name__ == '__main__':
     app.run(debug=True)
