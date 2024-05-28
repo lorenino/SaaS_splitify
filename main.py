@@ -115,7 +115,10 @@ def callback():
     token_info = sp_oauth.get_access_token(code)
     session['token_info'] = token_info
     sp = Spotify(auth=token_info['access_token'])
-    spotify_id = sp.current_user()['id']
+    user_info = sp.current_user()
+    spotify_id = user_info['id']
+
+    flash(f"Spotify ID retrieved: {spotify_id}")
 
     if current_user.is_authenticated:
         conn = sqlite3.connect('users.db')
@@ -128,6 +131,7 @@ def callback():
     else:
         flash('Please log in or sign up to link your Spotify account.')
         return redirect(url_for('login'))
+
 
 @app.route('/logout')
 @login_required
@@ -252,6 +256,24 @@ def add_track_to_playlists(playlist_id, track_id):
     for pl_id in selected_playlists:
         sp.playlist_add_items(pl_id, [track_id])
     return '', 204
+
+@app.route('/profile')
+@login_required
+def profile():
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+    c.execute('SELECT spotify_id FROM users WHERE id = ?', (current_user.id,))
+    spotify_id = c.fetchone()
+    conn.close()
+
+    if spotify_id:
+        spotify_id = spotify_id[0]
+    else:
+        spotify_id = "Not Linked"
+        flash("Spotify ID not linked")
+
+    return render_template('profile.html', spotify_id=spotify_id)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
