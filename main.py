@@ -99,7 +99,19 @@ def swipe_playlist_with_add(playlist_id):
     sp = Spotify(auth=token_info['access_token'])
     playlist = sp.playlist(playlist_id)
     tracks = playlist['tracks']['items']
-    return render_template('swipe.html', tracks=tracks, playlist_id=playlist_id, selected_playlists=selected_playlists)
+    
+    # Get details of the selected playlists
+    playlists = sp.current_user_playlists()
+    selected_playlists_details = [
+        {
+            'name': playlist['name'],
+            'id': playlist['id'],
+            'image_url': playlist['images'][0]['url'] if playlist['images'] else None
+        } for playlist in playlists['items'] if playlist['id'] in selected_playlists
+    ]
+    
+    return render_template('swipe.html', tracks=tracks, playlist_id=playlist_id, selected_playlists=selected_playlists_details)
+
 
 @app.route('/playlist/<playlist_id>/remove_track/<track_id>', methods=['POST'])
 def remove_track(playlist_id, track_id):
@@ -122,6 +134,9 @@ def add_track_to_playlists(playlist_id, track_id):
     for pl_id in selected_playlists:
         sp.playlist_add_items(pl_id, [track_id])
     return '', 204
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

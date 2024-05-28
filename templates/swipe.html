@@ -15,6 +15,7 @@
             align-items: center;
             height: 100vh;
             position: relative;
+            flex-direction: column;
         }
         .track-card {
             background-color: #fff;
@@ -25,6 +26,7 @@
             text-align: center;
             padding: 20px;
             position: absolute;
+            top: 50px;
         }
         .track-card img {
             width: 100%;
@@ -77,14 +79,29 @@
             color: #555;
         }
         .add-to-playlists {
-            margin-top: 20px;
+            margin-top: 350px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
         }
-        .add-to-playlists select {
+        .playlist-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            width: 150px;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .playlist-card img {
             width: 100%;
-            padding: 5px;
+            height: auto;
             border-radius: 5px;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
+        }
+        .playlist-card h4 {
+            margin: 10px 0;
+            font-size: 14px;
         }
     </style>
     <script>
@@ -123,24 +140,34 @@
                     });
             }
 
-            function addToPlaylists() {
+            function addToPlaylist(plId) {
                 let trackId = tracks[currentTrackIndex].track.id;
                 fetch(`/playlist/${playlistId}/add_track_to_playlists/${trackId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ selected_playlists: selectedPlaylists })
+                    body: JSON.stringify({ selected_playlists: [plId] })
                 }).then(response => {
                     if (response.ok) {
-                        alert('Track added to selected playlists');
+                        alert('Track added to selected playlist');
                     }
                 });
             }
 
             document.getElementById('keep-button').addEventListener('click', keepTrack);
             document.getElementById('remove-button').addEventListener('click', removeTrack);
-            document.getElementById('add-to-playlists-button').addEventListener('click', addToPlaylists);
+
+            selectedPlaylists.forEach(pl => {
+                const playlistCard = document.createElement('div');
+                playlistCard.className = 'playlist-card';
+                playlistCard.innerHTML = `
+                    <img src="${pl.image_url}" alt="Playlist Image">
+                    <h4>${pl.name}</h4>
+                `;
+                playlistCard.addEventListener('click', () => addToPlaylist(pl.id));
+                document.querySelector('.add-to-playlists').appendChild(playlistCard);
+            });
 
             showTrack(currentTrackIndex);
         });
@@ -156,9 +183,9 @@
             <button id="keep-button" class="button">Keep</button>
             <button id="remove-button" class="button remove">Remove</button>
         </div>
-        <div class="add-to-playlists">
-            <button id="add-to-playlists-button" class="button">Add to Playlists</button>
-        </div>
+    </div>
+    <div class="add-to-playlists">
+        <!-- Playlist cards will be appended here -->
     </div>
 </body>
 </html>
