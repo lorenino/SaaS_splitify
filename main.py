@@ -100,8 +100,14 @@ def signup():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        return redirect(sp_oauth.get_authorize_url())
+        User.create(username, password, None)  # Create user without spotify_id initially
+        flash('Account created successfully. Please log in.')
+        return redirect(url_for('login'))
     return render_template('signup.html')
+
+@app.route('/spotify_login')
+def spotify_login():
+    return redirect(sp_oauth.get_authorize_url())
 
 @app.route('/callback')
 def callback():
@@ -110,6 +116,7 @@ def callback():
     session['token_info'] = token_info
     sp = Spotify(auth=token_info['access_token'])
     spotify_id = sp.current_user()['id']
+
     if current_user.is_authenticated:
         conn = sqlite3.connect('users.db')
         c = conn.cursor()
@@ -128,16 +135,17 @@ def logout():
     logout_user()
     flash('You have been logged out.')
     return redirect(url_for('index'))
+
 @app.route('/display_playlists')
 @login_required
 def display_playlists():
     token_info = session.get('token_info', None)
     if not token_info:
-        return redirect(url_for('login'))
+        return redirect(url_for('spotify_login'))
 
     sp = Spotify(auth=token_info['access_token'])
-    current_user = sp.current_user()
-    user_id = current_user['id']
+    current_user_info = sp.current_user()
+    user_id = current_user_info['id']
     playlists = sp.current_user_playlists()
     structured_playlists = [
         {
@@ -157,7 +165,7 @@ def display_playlists():
 def view_playlist(playlist_id):
     token_info = session.get('token_info', None)
     if not token_info:
-        return redirect(url_for('login'))
+        return redirect(url_for('spotify_login'))
 
     sp = Spotify(auth=token_info['access_token'])
     playlist = sp.playlist(playlist_id)
@@ -168,7 +176,7 @@ def view_playlist(playlist_id):
 def select_playlists(playlist_id):
     token_info = session.get('token_info', None)
     if not token_info:
-        return redirect(url_for('login'))
+        return redirect(url_for('spotify_login'))
 
     sp = Spotify(auth=token_info['access_token'])
     if request.method == 'POST':
@@ -190,7 +198,7 @@ def select_playlists(playlist_id):
 def swipe_playlist(playlist_id):
     token_info = session.get('token_info', None)
     if not token_info:
-        return redirect(url_for('login'))
+        return redirect(url_for('spotify_login'))
 
     sp = Spotify(auth=token_info['access_token'])
     playlist = sp.playlist(playlist_id)
@@ -202,7 +210,7 @@ def swipe_playlist(playlist_id):
 def swipe_playlist_with_add(playlist_id):
     token_info = session.get('token_info', None)
     if not token_info:
-        return redirect(url_for('login'))
+        return redirect(url_for('spotify_login'))
 
     selected_playlists = request.args.get('selected_playlists', '').split(',')
     sp = Spotify(auth=token_info['access_token'])
@@ -226,7 +234,7 @@ def swipe_playlist_with_add(playlist_id):
 def remove_track(playlist_id, track_id):
     token_info = session.get('token_info', None)
     if not token_info:
-        return redirect(url_for('login'))
+        return redirect(url_for('spotify_login'))
 
     sp = Spotify(auth=token_info['access_token'])
     sp.playlist_remove_all_occurrences_of_items(playlist_id, [track_id])
@@ -237,7 +245,7 @@ def remove_track(playlist_id, track_id):
 def add_track_to_playlists(playlist_id, track_id):
     token_info = session.get('token_info', None)
     if not token_info:
-        return redirect(url_for('login'))
+        return redirect(url_for('spotify_login'))
 
     selected_playlists = request.json.get('selected_playlists', [])
     sp = Spotify(auth=token_info['access_token'])
