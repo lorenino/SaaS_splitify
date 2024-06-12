@@ -51,9 +51,4 @@ SaaS_splitify est une application web utilisant Flask et Spotify API pour gérer
 - `/playlist/<playlist_id>/swipe_with_add` : Swipe des pistes avec ajout à d'autres playlists
 - `/logout` : Déconnexion
 - `/profile` : Afficher le profil de l'utilisateur
-
-## Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus d'informations.
-
 ---
